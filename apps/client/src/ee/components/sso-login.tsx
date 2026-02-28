@@ -38,6 +38,18 @@ export default function SsoLogin() {
       return <GoogleIcon size={16} />;
     } else if (provider.type === SSO_PROVIDER.LDAP) {
       return <IconServer size={16} />;
+    } else if (
+      provider.type === SSO_PROVIDER.OIDC &&
+      provider.name?.toLowerCase().includes('azure')
+    ) {
+      // simple azure logo (use lock as fallback)
+      return (
+        <img
+          src="/icons/azure-icon.svg"
+          alt="Azure"
+          style={{ width: 16, height: 16 }}
+        />
+      );
     } else {
       return <IconLock size={16} />;
     }
@@ -72,6 +84,27 @@ export default function SsoLogin() {
                 </Button>
               </div>
             ))}
+      {/* support global azure login if configured via env */}
+      {process.env.REACT_APP_AZURE_ENABLED === 'true' && (
+        <div>
+          <Button
+            onClick={() =>
+              window.location.href = `${window.location.origin}/api/sso/azure/login`;
+            }
+            leftSection={
+              <img
+                src="/icons/azure-icon.svg"
+                alt="Azure"
+                style={{ width: 16, height: 16 }}
+              />
+            }
+            variant="default"
+            fullWidth
+          >
+            Sign in with Microsoft
+          </Button>
+        </div>
+      )}
           </Stack>
 
           {!data.enforceSso && (

@@ -67,6 +67,51 @@ export class AuthService {
     return this.tokenService.generateAccessToken(user);
   }
 
+  /**
+   * Create or look up a user based on an Azure AD profile.  Workspace
+   * id is passed through the `state` parameter during login.
+   */
+  async findOrCreateUserFromAzureProfile(
+    profile: any,
+    workspaceId: string,
+  ): Promise<User> {
+    const email =
+      profile._json?.email ||
+      (profile.emails && profile.emails.length ? profile.emails[0].value : null);
+    if (!email) {
+      throw new UnauthorizedException('Azure profile did not include an email');
+    }
+
+    let user = await this.userRepo.findByEmail(email, workspaceId);
+    if (user && user.deletedAt) {
+      throw new UnauthorizedException('Account disabled');
+    }
+
+    if (!user) {
+      const randomPassword = nanoIdGen(32);
+      const createUserDto: CreateUserDto = {
+        name: profile.displayName || profile._json?.name || email,
+        email,
+        password: randomPassword,
+      };
+
+      user = await this.signupService.signup(createUserDto, workspaceId);
+    }
+
+    user.lastLoginAt = new Date();
+    await this.userRepo.updateLastLogin(user.id, workspaceId);
+    return user;
+  }
+
+  /**
+   * Issue a JWT for an existing user; used by SSO callbacks.
+   */
+  async generateTokenForUser(user: User, workspaceId: string) {
+    user.lastLoginAt = new Date();
+    await this.userRepo.updateLastLogin(user.id, workspaceId);
+    return this.tokenService.generateAccessToken(user);
+  }
+
   async register(createUserDto: CreateUserDto, workspaceId: string) {
     const user = await this.signupService.signup(createUserDto, workspaceId);
     return this.tokenService.generateAccessToken(user);
