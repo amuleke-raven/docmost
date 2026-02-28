@@ -3,34 +3,22 @@ import {
   IconArrowRight,
   IconArrowsHorizontal,
   IconDots,
-  IconFileExport,
-  IconHistory,
-  IconLink,
   IconList,
-  IconMarkdown,
   IconMessage,
-  IconPrinter,
   IconTrash,
   IconWifiOff,
 } from "@tabler/icons-react";
 import React, { useEffect, useRef, useState } from "react";
 import useToggleAside from "@/hooks/use-toggle-aside.tsx";
 import { useAtom, useAtomValue } from "jotai";
-import { historyAtoms } from "@/features/page-history/atoms/history-atoms.ts";
 import { useDisclosure, useHotkeys } from "@mantine/hooks";
-import { useClipboard } from "@/hooks/use-clipboard";
 import { useParams } from "react-router-dom";
 import { usePageQuery } from "@/features/page/queries/page-query.ts";
-import { buildPageUrl } from "@/features/page/page.utils.ts";
-import { notifications } from "@mantine/notifications";
-import { getAppUrl } from "@/lib/config.ts";
 import { extractPageSlugId } from "@/lib";
 import { treeApiAtom } from "@/features/page/tree/atoms/tree-api-atom.ts";
 import { useDeletePageModal } from "@/features/page/hooks/use-delete-page-modal.tsx";
 import { PageWidthToggle } from "@/features/user/components/page-width-pref.tsx";
 import { Trans, useTranslation } from "react-i18next";
-import ExportModal from "@/components/common/export-modal";
-import { htmlToMarkdown } from "@docmost/editor-ext";
 import {
   pageEditorAtom,
   yjsConnectionStatusAtom,
@@ -107,49 +95,18 @@ interface PageActionMenuProps {
 }
 function PageActionMenu({ readOnly }: PageActionMenuProps) {
   const { t } = useTranslation();
-  const [, setHistoryModalOpen] = useAtom(historyAtoms);
-  const clipboard = useClipboard({ timeout: 500 });
   const { pageSlug, spaceSlug } = useParams();
   const { data: page, isLoading } = usePageQuery({
     pageId: extractPageSlugId(pageSlug),
   });
   const { openDeleteModal } = useDeletePageModal();
   const [tree] = useAtom(treeApiAtom);
-  const [exportOpened, { open: openExportModal, close: closeExportModal }] =
-    useDisclosure(false);
   const [
     movePageModalOpened,
     { open: openMovePageModal, close: closeMoveSpaceModal },
   ] = useDisclosure(false);
   const [pageEditor] = useAtom(pageEditorAtom);
   const pageUpdatedAt = useTimeAgo(page?.updatedAt);
-
-  const handleCopyLink = () => {
-    const pageUrl =
-      getAppUrl() + buildPageUrl(spaceSlug, page.slugId, page.title);
-
-    clipboard.copy(pageUrl);
-    notifications.show({ message: t("Link copied") });
-  };
-
-  const handleCopyAsMarkdown = () => {
-    if (!pageEditor) return;
-    const html = pageEditor.getHTML();
-    const markdown = htmlToMarkdown(html);
-    const title = page?.title ? `# ${page.title}\n\n` : "";
-    clipboard.copy(`${title}${markdown}`);
-    notifications.show({ message: t("Copied") });
-  };
-
-  const handlePrint = () => {
-    setTimeout(() => {
-      window.print();
-    }, 250);
-  };
-
-  const openHistoryModal = () => {
-    setHistoryModalOpen(true);
-  };
 
   const handleDeletePage = () => {
     openDeleteModal({ onConfirm: () => tree?.delete(page.id) });
@@ -172,32 +129,10 @@ function PageActionMenu({ readOnly }: PageActionMenuProps) {
         </Menu.Target>
 
         <Menu.Dropdown>
-          <Menu.Item
-            leftSection={<IconLink size={16} />}
-            onClick={handleCopyLink}
-          >
-            {t("Copy link")}
-          </Menu.Item>
-
-          <Menu.Item
-            leftSection={<IconMarkdown size={16} />}
-            onClick={handleCopyAsMarkdown}
-          >
-            {t("Copy as Markdown")}
-          </Menu.Item>
-          <Menu.Divider />
-
           <Menu.Item leftSection={<IconArrowsHorizontal size={16} />}>
             <Group wrap="nowrap">
               <PageWidthToggle label={t("Full width")} />
             </Group>
-          </Menu.Item>
-
-          <Menu.Item
-            leftSection={<IconHistory size={16} />}
-            onClick={openHistoryModal}
-          >
-            {t("Page history")}
           </Menu.Item>
 
           <Menu.Divider />
@@ -211,19 +146,6 @@ function PageActionMenu({ readOnly }: PageActionMenuProps) {
             </Menu.Item>
           )}
 
-          <Menu.Item
-            leftSection={<IconFileExport size={16} />}
-            onClick={openExportModal}
-          >
-            {t("Export")}
-          </Menu.Item>
-
-          <Menu.Item
-            leftSection={<IconPrinter size={16} />}
-            onClick={handlePrint}
-          >
-            {t("Print PDF")}
-          </Menu.Item>
 
           {!readOnly && (
             <>
@@ -275,12 +197,6 @@ function PageActionMenu({ readOnly }: PageActionMenuProps) {
         </Menu.Dropdown>
       </Menu>
 
-      <ExportModal
-        type="page"
-        id={page.id}
-        open={exportOpened}
-        onClose={closeExportModal}
-      />
 
       <MovePageModal
         pageId={page.id}

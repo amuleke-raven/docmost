@@ -9,7 +9,6 @@ import {
 import {
   IconArrowDown,
   IconDots,
-  IconFileExport,
   IconHome,
   IconPlus,
   IconSearch,
@@ -35,7 +34,6 @@ import {
 import PageImportModal from "@/features/page/components/page-import-modal.tsx";
 import { useTranslation } from "react-i18next";
 import { SwitchSpace } from "./switch-space";
-import ExportModal from "@/components/common/export-modal";
 import { mobileSidebarAtom } from "@/components/layouts/global/hooks/atoms/sidebar-atom.ts";
 import { useToggleSidebar } from "@/components/layouts/global/hooks/hooks/use-toggle-sidebar.ts";
 import { searchSpotlight } from "@/features/search/constants";
@@ -211,8 +209,6 @@ function SpaceMenu({ spaceId, onSpaceSettings }: SpaceMenuProps) {
   const { spaceSlug } = useParams();
   const [importOpened, { open: openImportModal, close: closeImportModal }] =
     useDisclosure(false);
-  const [exportOpened, { open: openExportModal, close: closeExportModal }] =
-    useDisclosure(false);
 
   return (
     <>
@@ -241,13 +237,6 @@ function SpaceMenu({ spaceId, onSpaceSettings }: SpaceMenuProps) {
             {t("Import pages")}
           </Menu.Item>
 
-          <Menu.Item
-            onClick={openExportModal}
-            leftSection={<IconFileExport size={16} />}
-          >
-            {t("Export space")}
-          </Menu.Item>
-
           <Menu.Divider />
 
           <Menu.Item
@@ -271,13 +260,6 @@ function SpaceMenu({ spaceId, onSpaceSettings }: SpaceMenuProps) {
         spaceId={spaceId}
         open={importOpened}
         onClose={closeImportModal}
-      />
-
-      <ExportModal
-        type="space"
-        id={spaceId}
-        open={exportOpened}
-        onClose={closeExportModal}
       />
     </>
   );

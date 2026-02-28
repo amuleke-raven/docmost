@@ -4,7 +4,6 @@ import { EditSpaceForm } from "@/features/space/components/edit-space-form.tsx";
 import { Button, Divider, Text } from "@mantine/core";
 import DeleteSpaceModal from "./delete-space-modal";
 import { useDisclosure } from "@mantine/hooks";
-import ExportModal from "@/components/common/export-modal.tsx";
 import AvatarUploader from "@/components/common/avatar-uploader.tsx";
 import {
   uploadSpaceIcon,
@@ -30,8 +29,6 @@ export default function SpaceDetails({ spaceId, readOnly }: SpaceDetailsProps) {
   const { data: space, isLoading, refetch } = useSpaceQuery(spaceId);
   const hasEnterpriseAccess = useEnterpriseAccess();
   const showSharingToggle = !readOnly && hasEnterpriseAccess;
-  const [exportOpened, { open: openExportModal, close: closeExportModal }] =
-    useDisclosure(false);
   const [isIconUploading, setIsIconUploading] = useState(false);
 
   const handleIconUpload = async (file: File) => {
@@ -104,20 +101,6 @@ export default function SpaceDetails({ spaceId, readOnly }: SpaceDetailsProps) {
 
               <ResponsiveSettingsRow>
                 <ResponsiveSettingsContent>
-                  <Text size="md">{t("Export space")}</Text>
-                  <Text size="sm" c="dimmed">
-                    {t("Export all pages and attachments in this space.")}
-                  </Text>
-                </ResponsiveSettingsContent>
-                <ResponsiveSettingsControl>
-                  <Button onClick={openExportModal}>{t("Export")}</Button>
-                </ResponsiveSettingsControl>
-              </ResponsiveSettingsRow>
-
-              <Divider my="lg" />
-
-              <ResponsiveSettingsRow>
-                <ResponsiveSettingsContent>
                   <Text size="md">{t("Delete space")}</Text>
                   <Text size="sm" c="dimmed">
                     {t("Delete this space with all its pages and data.")}
@@ -127,13 +110,6 @@ export default function SpaceDetails({ spaceId, readOnly }: SpaceDetailsProps) {
                   <DeleteSpaceModal space={space} />
                 </ResponsiveSettingsControl>
               </ResponsiveSettingsRow>
-
-              <ExportModal
-                type="space"
-                id={space.id}
-                open={exportOpened}
-                onClose={closeExportModal}
-              />
             </>
           )}
         </div>

@@ -24,7 +24,6 @@ import {
   IconCopy,
   IconDotsVertical,
   IconFileDescription,
-  IconFileExport,
   IconLink,
   IconPlus,
   IconPointFilled,
@@ -63,7 +62,6 @@ import { getAppUrl } from "@/lib/config.ts";
 import { extractPageSlugId } from "@/lib";
 import { useDeletePageModal } from "@/features/page/hooks/use-delete-page-modal.tsx";
 import { useTranslation } from "react-i18next";
-import ExportModal from "@/components/common/export-modal";
 import MovePageModal from "../../components/move-page-modal.tsx";
 import { mobileSidebarAtom } from "@/components/layouts/global/hooks/atoms/sidebar-atom.ts";
 import { useToggleSidebar } from "@/components/layouts/global/hooks/hooks/use-toggle-sidebar.ts";
@@ -496,8 +494,7 @@ function NodeMenu({ node, treeApi, spaceId }: NodeMenuProps) {
   const { openDeleteModal } = useDeletePageModal();
   const [data, setData] = useAtom(treeDataAtom);
   const emit = useQueryEmit();
-  const [exportOpened, { open: openExportModal, close: closeExportModal }] =
-    useDisclosure(false);
+
   const [
     movePageModalOpened,
     { open: openMovePageModal, close: closeMoveSpaceModal },
@@ -608,17 +605,6 @@ function NodeMenu({ node, treeApi, spaceId }: NodeMenuProps) {
             {t("Copy link")}
           </Menu.Item>
 
-          <Menu.Item
-            leftSection={<IconFileExport size={16} />}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openExportModal();
-            }}
-          >
-            {t("Export page")}
-          </Menu.Item>
-
           {treeApi.props.disableEdit !== true &&
             node.data.canEdit !== false && (
               <>
@@ -685,13 +671,6 @@ function NodeMenu({ node, treeApi, spaceId }: NodeMenuProps) {
         currentSpaceSlug={spaceSlug}
         onClose={closeCopySpaceModal}
         open={copyPageModalOpened}
-      />
-
-      <ExportModal
-        type="page"
-        id={node.id}
-        open={exportOpened}
-        onClose={closeExportModal}
       />
     </>
   );
