@@ -88,9 +88,9 @@ export default function SsoLogin() {
       {process.env.REACT_APP_AZURE_ENABLED === 'true' && (
         <div>
           <Button
-            onClick={() =>
-              window.location.href = `${window.location.origin}/api/sso/azure/login`;
-            }
+            onClick={() => {
+              window.location.href = window.location.origin + '/api/sso/azure/login';
+            }}
             leftSection={
               <img
                 src="/icons/azure-icon.svg"
