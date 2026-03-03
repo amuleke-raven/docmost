@@ -52,17 +52,46 @@ export class AuthService {
       throw new UnauthorizedException(errorMessage);
     }
 
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const secondsLeft = Math.ceil(
+        (user.lockedUntil.getTime() - Date.now()) / 1000,
+      );
+      throw new UnauthorizedException(
+        `Account locked. Try again in ${secondsLeft} seconds.`,
+      );
+    }
+
     const isPasswordMatch = await comparePasswordHash(
       loginDto.password,
       user.password,
     );
 
     if (!isPasswordMatch) {
+      const newAttempts = (user.failedLoginAttempts ?? 0) + 1;
+      const lockout = newAttempts >= 4;
+      await this.userRepo.updateUser(
+        {
+          failedLoginAttempts: newAttempts,
+          lockedUntil: lockout
+            ? new Date(Date.now() + 15 * 60 * 1000)
+            : user.lockedUntil,
+        },
+        user.id,
+        workspaceId,
+      );
       throw new UnauthorizedException(errorMessage);
     }
 
     user.lastLoginAt = new Date();
-    await this.userRepo.updateLastLogin(user.id, workspaceId);
+    await this.userRepo.updateUser(
+      {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+        lastLoginAt: new Date(),
+      },
+      user.id,
+      workspaceId,
+    );
 
     return this.tokenService.generateAccessToken(user);
   }

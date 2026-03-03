@@ -300,11 +300,13 @@ export interface Users {
   deletedAt: Timestamp | null;
   email: string;
   emailVerifiedAt: Timestamp | null;
+  failedLoginAttempts: Generated<number>;
   id: Generated<string>;
   invitedById: string | null;
   lastActiveAt: Timestamp | null;
   lastLoginAt: Timestamp | null;
   locale: string | null;
+  lockedUntil: Timestamp | null;
   hasGeneratedPassword: Generated<boolean | null>;
   name: string | null;
   password: string | null;
