@@ -29,12 +29,15 @@ import useTrial from "@/ee/hooks/use-trial.tsx";
 import { useAtom } from "jotai";
 import { workspaceAtom } from "@/features/user/atoms/current-user-atom.ts";
 import { useSpaceQuery } from "@/features/space/queries/space-query.ts";
+import useUserRole from "@/hooks/use-user-role.tsx";
 
 interface ShareModalProps {
   readOnly: boolean;
 }
 export default function ShareModal({ readOnly }: ShareModalProps) {
   const { t } = useTranslation();
+  const { isOwner } = useUserRole();
+  const effectiveReadOnly = readOnly || !isOwner;
   const navigate = useNavigate();
   const { pageSlug } = useParams();
   const pageSlugId = extractPageSlugId(pageSlug);
@@ -240,7 +243,7 @@ export default function ShareModal({ readOnly }: ShareModalProps) {
               <Switch
                 onChange={handleChange}
                 defaultChecked={isPagePublic}
-                disabled={readOnly}
+                disabled={effectiveReadOnly}
                 size="xs"
               />
             </Group>
@@ -260,7 +263,7 @@ export default function ShareModal({ readOnly }: ShareModalProps) {
                     onChange={handleSubPagesChange}
                     checked={share.includeSubPages}
                     size="xs"
-                    disabled={readOnly}
+                    disabled={effectiveReadOnly}
                   />
                 </Group>
                 <Group justify="space-between" wrap="nowrap" gap="xl" mt="sm">
@@ -274,7 +277,7 @@ export default function ShareModal({ readOnly }: ShareModalProps) {
                     onChange={handleIndexSearchChange}
                     checked={share.searchIndexing}
                     size="xs"
-                    disabled={readOnly}
+                    disabled={effectiveReadOnly}
                   />
                 </Group>
               </>

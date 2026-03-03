@@ -29,6 +29,7 @@ import { ShareRepo } from '@docmost/db/repos/share/share.repo';
 import { PaginationOptions } from '@docmost/db/pagination/pagination-options';
 import { EnvironmentService } from '../../integrations/environment/environment.service';
 import { hasLicenseOrEE } from '../../common/helpers';
+import { UserRole } from '../../common/helpers/types/permission';
 
 @UseGuards(JwtAuthGuard)
 @Controller('shares')
@@ -129,6 +130,10 @@ export class ShareController {
     @AuthUser() user: User,
     @AuthWorkspace() workspace: Workspace,
   ) {
+    if (user.role !== UserRole.OWNER) {
+      throw new ForbiddenException();
+    }
+
     const page = await this.pageRepo.findById(createShareDto.pageId);
 
     if (!page || workspace.id !== page.workspaceId) {
@@ -167,6 +172,10 @@ export class ShareController {
   @HttpCode(HttpStatus.OK)
   @Post('update')
   async update(@Body() updateShareDto: UpdateShareDto, @AuthUser() user: User) {
+    if (user.role !== UserRole.OWNER) {
+      throw new ForbiddenException();
+    }
+
     const share = await this.shareRepo.findById(updateShareDto.shareId);
 
     if (!share) {
@@ -187,6 +196,10 @@ export class ShareController {
   @HttpCode(HttpStatus.OK)
   @Post('delete')
   async delete(@Body() shareIdDto: ShareIdDto, @AuthUser() user: User) {
+    if (user.role !== UserRole.OWNER) {
+      throw new ForbiddenException();
+    }
+
     const share = await this.shareRepo.findById(shareIdDto.shareId);
 
     if (!share) {

@@ -23,6 +23,7 @@ import { useIsCloudEE } from "@/hooks/use-is-cloud-ee";
 import { useAtom } from "jotai";
 import { workspaceAtom } from "@/features/user/atoms/current-user-atom";
 import { useSpaceQuery } from "@/features/space/queries/space-query";
+import useUserRole from "@/hooks/use-user-role";
 
 type PageShareModalProps = {
   readOnly?: boolean;
@@ -38,6 +39,7 @@ export function PageShareModal({ readOnly }: PageShareModalProps) {
     isCloudEE ? "access" : "publish",
   );
 
+  const { isOwner } = useUserRole();
   const [workspace] = useAtom(workspaceAtom);
   const { data: space } = useSpaceQuery(spaceSlug);
   const workspaceSharingDisabled = workspace?.settings?.sharing?.disabled === true;
@@ -119,7 +121,7 @@ export function PageShareModal({ readOnly }: PageShareModalProps) {
           <Tabs.Panel value="publish">
             <PublishTab
               pageId={pageId}
-              readOnly={readOnly}
+              readOnly={readOnly || !isOwner}
               isRestricted={isRestricted}
               workspaceSharingDisabled={workspaceSharingDisabled}
               spaceSharingDisabled={spaceSharingDisabled}
