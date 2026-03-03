@@ -35,6 +35,7 @@ import { EnvironmentService } from '../../../integrations/environment/environmen
 import { CheckHostnameDto } from '../dto/check-hostname.dto';
 import { RemoveWorkspaceUserDto } from '../dto/remove-workspace-user.dto';
 import { AdminResetMemberPasswordDto } from '../dto/admin-reset-member-password.dto';
+import { CreateDirectUserDto } from '../dto/create-direct-user.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('workspace')
@@ -105,6 +106,22 @@ export class WorkspaceController {
     }
 
     return this.workspaceService.getWorkspaceUsers(workspace.id, pagination);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('members/create-user')
+  async createWorkspaceMember(
+    @Body() dto: CreateDirectUserDto,
+    @AuthUser() user: User,
+    @AuthWorkspace() workspace: Workspace,
+  ) {
+    const ability = this.workspaceAbility.createForUser(user, workspace);
+    if (
+      ability.cannot(WorkspaceCaslAction.Manage, WorkspaceCaslSubject.Member)
+    ) {
+      throw new ForbiddenException();
+    }
+    return this.workspaceService.createDirectUser(user, dto, workspace.id);
   }
 
   @HttpCode(HttpStatus.OK)

@@ -574,6 +574,74 @@ export class WorkspaceService {
     }
   }
 
+  async createDirectUser(
+    authUser: User,
+    dto: {
+      email: string;
+      name: string;
+      password: string;
+      role: string;
+      groupIds?: string[];
+    },
+    workspaceId: string,
+  ): Promise<User> {
+    if (authUser.role === UserRole.ADMIN && dto.role === UserRole.OWNER) {
+      throw new ForbiddenException();
+    }
+
+    const existingUser = await this.userRepo.findByEmail(
+      dto.email,
+      workspaceId,
+    );
+    if (existingUser) {
+      throw new BadRequestException('A user with this email already exists');
+    }
+
+    return await executeTx(this.db, async (trx) => {
+      const newUser = await this.userRepo.insertUser(
+        {
+          email: dto.email,
+          name: dto.name,
+          password: dto.password,
+          role: dto.role,
+          workspaceId,
+          emailVerifiedAt: new Date(),
+        },
+        trx,
+      );
+
+      await this.groupUserRepo.addUserToDefaultGroup(
+        newUser.id,
+        workspaceId,
+        trx,
+      );
+
+      if (dto.groupIds && dto.groupIds.length > 0) {
+        const validGroups = await trx
+          .selectFrom('groups')
+          .select(['id', 'name'])
+          .where('groups.id', 'in', dto.groupIds)
+          .where('groups.workspaceId', '=', workspaceId)
+          .execute();
+
+        if (validGroups && validGroups.length > 0) {
+          const groupUsersToInsert = validGroups.map((group) => ({
+            userId: newUser.id,
+            groupId: group.id,
+          }));
+
+          await trx
+            .insertInto('groupUsers')
+            .values(groupUsersToInsert)
+            .onConflict((oc) => oc.columns(['userId', 'groupId']).doNothing())
+            .execute();
+        }
+      }
+
+      return newUser;
+    });
+  }
+
   async adminResetMemberPassword(
     authUser: User,
     targetUserId: string,

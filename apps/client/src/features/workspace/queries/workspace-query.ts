@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import {
   changeMemberRole,
+  createDirectUser,
   getInvitationById,
   getPendingInvitations,
   getWorkspaceMembers,
@@ -22,6 +23,7 @@ import {
 import { IPagination, QueryParams } from "@/lib/types.ts";
 import { notifications } from "@mantine/notifications";
 import {
+  ICreateDirectUser,
   ICreateInvite,
   IInvitation,
   IPublicWorkspace,
@@ -179,6 +181,21 @@ export function useGetInvitationQuery(
     queryKey: ["invitations", invitationId],
     queryFn: () => getInvitationById({ invitationId }),
     enabled: !!invitationId,
+  });
+}
+
+export function useCreateDirectUserMutation() {
+  const queryClient = useQueryClient();
+  return useMutation<IUser, Error, ICreateDirectUser>({
+    mutationFn: (data) => createDirectUser(data),
+    onSuccess: () => {
+      notifications.show({ message: "User created successfully" });
+      queryClient.invalidateQueries({ queryKey: ["workspaceMembers"] });
+    },
+    onError: (error) => {
+      const errorMessage = error["response"]?.data?.message;
+      notifications.show({ message: errorMessage, color: "red" });
+    },
   });
 }
 

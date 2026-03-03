@@ -41,6 +41,14 @@ export interface IWorkspaceSharingSettings {
   disabled?: boolean;
 }
 
+export interface ICreateDirectUser {
+  email: string;
+  name: string;
+  password: string;
+  role: string;
+  groupIds?: string[];
+}
+
 export interface ICreateInvite {
   role: string;
   emails: string[];

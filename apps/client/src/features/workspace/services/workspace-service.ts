@@ -1,6 +1,7 @@
 import api from "@/lib/api-client";
 import { IUser } from "@/features/user/types/user.types";
 import {
+  ICreateDirectUser,
   ICreateInvite,
   IInvitation,
   IWorkspace,
@@ -116,4 +117,11 @@ export async function resetMemberPassword(data: {
   newPassword: string;
 }): Promise<void> {
   await api.post("/workspace/members/reset-password", data);
+}
+
+export async function createDirectUser(
+  data: ICreateDirectUser,
+): Promise<IUser> {
+  const req = await api.post<IUser>("/workspace/members/create-user", data);
+  return req.data;
 }
