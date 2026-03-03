@@ -81,6 +81,7 @@ const groupedData: DataGroup[] = [
         label: "Members",
         icon: IconUsers,
         path: "/settings/members",
+        isAdmin: true,
       },
       {
         label: "Billing",

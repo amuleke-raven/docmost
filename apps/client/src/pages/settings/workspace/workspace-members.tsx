@@ -21,6 +21,12 @@ export default function WorkspaceMembers() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!isAdmin) {
+      navigate("/settings/account/profile", { replace: true });
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
     const currentTab = searchParams.get("tab");
     if (currentTab === "invites") {
       setSegmentValue(currentTab);
