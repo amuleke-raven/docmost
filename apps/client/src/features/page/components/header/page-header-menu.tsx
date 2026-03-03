@@ -28,6 +28,7 @@ import { PageStateSegmentedControl } from "@/features/user/components/page-state
 import MovePageModal from "@/features/page/components/move-page-modal.tsx";
 import { useTimeAgo } from "@/hooks/use-time-ago.tsx";
 import { PageShareModal } from "@/ee/page-permission";
+import useUserRole from "@/hooks/use-user-role.tsx";
 
 interface PageHeaderMenuProps {
   readOnly?: boolean;
@@ -35,6 +36,7 @@ interface PageHeaderMenuProps {
 export default function PageHeaderMenu({ readOnly }: PageHeaderMenuProps) {
   const { t } = useTranslation();
   const toggleAside = useToggleAside();
+  const { isOwner } = useUserRole();
 
   useHotkeys(
     [
@@ -63,7 +65,7 @@ export default function PageHeaderMenu({ readOnly }: PageHeaderMenuProps) {
 
       {!readOnly && <PageStateSegmentedControl size="xs" />}
 
-      <PageShareModal readOnly={readOnly} />
+      {isOwner && <PageShareModal readOnly={readOnly} />}
 
       <Tooltip label={t("Comments")} openDelay={250} withArrow>
         <ActionIcon
