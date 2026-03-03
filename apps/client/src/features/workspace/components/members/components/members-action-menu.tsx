@@ -1,8 +1,11 @@
-import { Menu, ActionIcon, Text } from "@mantine/core";
-import React from "react";
-import { IconDots, IconTrash } from "@tabler/icons-react";
+import { Menu, ActionIcon, Text, Modal, PasswordInput, Button, Stack } from "@mantine/core";
+import React, { useState } from "react";
+import { IconDots, IconKey, IconTrash } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
-import { useDeleteWorkspaceMemberMutation } from "@/features/workspace/queries/workspace-query.ts";
+import {
+  useDeleteWorkspaceMemberMutation,
+  useResetMemberPasswordMutation,
+} from "@/features/workspace/queries/workspace-query.ts";
 import { useTranslation } from "react-i18next";
 import useUserRole from "@/hooks/use-user-role.tsx";
 
@@ -12,7 +15,10 @@ interface Props {
 export default function MemberActionMenu({ userId }: Props) {
   const { t } = useTranslation();
   const deleteWorkspaceMemberMutation = useDeleteWorkspaceMemberMutation();
+  const resetMutation = useResetMemberPasswordMutation();
   const { isAdmin } = useUserRole();
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
 
   const onRevoke = async () => {
     await deleteWorkspaceMemberMutation.mutateAsync({ userId });
@@ -34,8 +40,41 @@ export default function MemberActionMenu({ userId }: Props) {
       onConfirm: onRevoke,
     });
 
+  const handleResetPassword = async () => {
+    await resetMutation.mutateAsync({ userId, newPassword });
+    setResetModalOpen(false);
+    setNewPassword("");
+  };
+
   return (
     <>
+      <Modal
+        opened={resetModalOpen}
+        onClose={() => {
+          setResetModalOpen(false);
+          setNewPassword("");
+        }}
+        title={t("Reset member password")}
+        centered
+      >
+        <Stack>
+          <PasswordInput
+            label={t("New password")}
+            placeholder={t("Enter new password")}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.currentTarget.value)}
+            minLength={8}
+          />
+          <Button
+            onClick={handleResetPassword}
+            loading={resetMutation.isPending}
+            disabled={newPassword.length < 8}
+          >
+            {t("Reset password")}
+          </Button>
+        </Stack>
+      </Modal>
+
       <Menu
         shadow="xl"
         position="bottom-end"
@@ -51,6 +90,14 @@ export default function MemberActionMenu({ userId }: Props) {
         </Menu.Target>
 
         <Menu.Dropdown>
+          <Menu.Item
+            onClick={() => setResetModalOpen(true)}
+            leftSection={<IconKey size={16} />}
+            disabled={!isAdmin}
+          >
+            {t("Reset password")}
+          </Menu.Item>
+          <Menu.Divider />
           <Menu.Item
             c="red"
             onClick={openRevokeModal}

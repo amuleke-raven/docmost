@@ -31,7 +31,10 @@ import { v4 } from 'uuid';
 import { InjectQueue } from '@nestjs/bullmq';
 import { QueueJob, QueueName } from '../../../integrations/queue/constants';
 import { Queue } from 'bullmq';
-import { generateRandomSuffixNumbers } from '../../../common/helpers';
+import {
+  generateRandomSuffixNumbers,
+  hashPassword,
+} from '../../../common/helpers';
 import { isPageEmbeddingsTableExists } from '@docmost/db/helpers/helpers';
 import { CursorPaginationResult } from '@docmost/db/pagination/cursor-pagination';
 import { ShareRepo } from '@docmost/db/repos/share/share.repo';
@@ -569,5 +572,35 @@ export class WorkspaceService {
     } catch (err) {
       // empty
     }
+  }
+
+  async adminResetMemberPassword(
+    authUser: User,
+    targetUserId: string,
+    newPassword: string,
+    workspaceId: string,
+  ): Promise<void> {
+    const user = await this.userRepo.findById(targetUserId, workspaceId);
+
+    if (!user || user.deletedAt) {
+      throw new NotFoundException('Workspace member not found');
+    }
+
+    if (authUser.role === UserRole.ADMIN && user.role === UserRole.OWNER) {
+      throw new ForbiddenException();
+    }
+
+    if (authUser.id === targetUserId) {
+      throw new ForbiddenException(
+        'Use change-password to update your own password',
+      );
+    }
+
+    const newPasswordHash = await hashPassword(newPassword);
+    await this.userRepo.updateUser(
+      { password: newPasswordHash, hasGeneratedPassword: false },
+      targetUserId,
+      workspaceId,
+    );
   }
 }

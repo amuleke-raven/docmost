@@ -110,3 +110,10 @@ export async function getAppVersion(): Promise<IVersion> {
   const req = await api.post("/version");
   return req.data;
 }
+
+export async function resetMemberPassword(data: {
+  userId: string;
+  newPassword: string;
+}): Promise<void> {
+  await api.post("/workspace/members/reset-password", data);
+}

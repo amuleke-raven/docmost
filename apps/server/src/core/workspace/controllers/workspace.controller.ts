@@ -34,6 +34,7 @@ import { FastifyReply } from 'fastify';
 import { EnvironmentService } from '../../../integrations/environment/environment.service';
 import { CheckHostnameDto } from '../dto/check-hostname.dto';
 import { RemoveWorkspaceUserDto } from '../dto/remove-workspace-user.dto';
+import { AdminResetMemberPasswordDto } from '../dto/admin-reset-member-password.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('workspace')
@@ -134,6 +135,27 @@ export class WorkspaceController {
       throw new ForbiddenException();
     }
     await this.workspaceService.deleteUser(user, dto.userId, workspace.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('members/reset-password')
+  async resetWorkspaceMemberPassword(
+    @Body() dto: AdminResetMemberPasswordDto,
+    @AuthUser() user: User,
+    @AuthWorkspace() workspace: Workspace,
+  ) {
+    const ability = this.workspaceAbility.createForUser(user, workspace);
+    if (
+      ability.cannot(WorkspaceCaslAction.Manage, WorkspaceCaslSubject.Member)
+    ) {
+      throw new ForbiddenException();
+    }
+    await this.workspaceService.adminResetMemberPassword(
+      user,
+      dto.userId,
+      dto.newPassword,
+      workspace.id,
+    );
   }
 
   @HttpCode(HttpStatus.OK)

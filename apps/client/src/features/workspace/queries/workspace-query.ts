@@ -17,6 +17,7 @@ import {
   getWorkspacePublicData,
   getAppVersion,
   deleteWorkspaceMember,
+  resetMemberPassword,
 } from "@/features/workspace/services/workspace-service";
 import { IPagination, QueryParams } from "@/lib/types.ts";
 import { notifications } from "@mantine/notifications";
@@ -178,6 +179,19 @@ export function useGetInvitationQuery(
     queryKey: ["invitations", invitationId],
     queryFn: () => getInvitationById({ invitationId }),
     enabled: !!invitationId,
+  });
+}
+
+export function useResetMemberPasswordMutation() {
+  return useMutation<void, Error, { userId: string; newPassword: string }>({
+    mutationFn: (data) => resetMemberPassword(data),
+    onSuccess: () => {
+      notifications.show({ message: "Member password updated successfully" });
+    },
+    onError: (error) => {
+      const errorMessage = error["response"]?.data?.message;
+      notifications.show({ message: errorMessage, color: "red" });
+    },
   });
 }
 
