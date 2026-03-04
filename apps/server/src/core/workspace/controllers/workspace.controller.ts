@@ -127,6 +127,7 @@ export class WorkspaceController {
   @HttpCode(HttpStatus.OK)
   @Post('members/deactivate')
   async deactivateWorkspaceMember(
+    @Body() dto: RemoveWorkspaceUserDto,
     @AuthUser() user: User,
     @AuthWorkspace() workspace: Workspace,
   ) {
@@ -136,6 +137,31 @@ export class WorkspaceController {
     ) {
       throw new ForbiddenException();
     }
+    await this.workspaceService.suspendWorkspaceMember(
+      user,
+      dto.userId,
+      workspace.id,
+    );
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('members/reactivate')
+  async reactivateWorkspaceMember(
+    @Body() dto: RemoveWorkspaceUserDto,
+    @AuthUser() user: User,
+    @AuthWorkspace() workspace: Workspace,
+  ) {
+    const ability = this.workspaceAbility.createForUser(user, workspace);
+    if (
+      ability.cannot(WorkspaceCaslAction.Manage, WorkspaceCaslSubject.Member)
+    ) {
+      throw new ForbiddenException();
+    }
+    await this.workspaceService.unsuspendWorkspaceMember(
+      user,
+      dto.userId,
+      workspace.id,
+    );
   }
 
   @HttpCode(HttpStatus.OK)

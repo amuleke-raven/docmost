@@ -51,9 +51,6 @@ export class AuthController {
       MfaModule = require('./../../ee/mfa/services/mfa.service');
       isMfaModuleReady = true;
     } catch (err) {
-      this.logger.debug(
-        'MFA module requested but EE module not bundled in this build',
-      );
       isMfaModuleReady = false;
     }
     if (isMfaModuleReady) {

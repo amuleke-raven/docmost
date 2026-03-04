@@ -125,3 +125,15 @@ export async function createDirectUser(
   const req = await api.post<IUser>("/workspace/members/create-user", data);
   return req.data;
 }
+
+export async function suspendWorkspaceMember(data: {
+  userId: string;
+}): Promise<void> {
+  await api.post("/workspace/members/deactivate", data);
+}
+
+export async function unsuspendWorkspaceMember(data: {
+  userId: string;
+}): Promise<void> {
+  await api.post("/workspace/members/reactivate", data);
+}

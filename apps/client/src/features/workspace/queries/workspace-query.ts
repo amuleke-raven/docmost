@@ -19,6 +19,8 @@ import {
   getAppVersion,
   deleteWorkspaceMember,
   resetMemberPassword,
+  suspendWorkspaceMember,
+  unsuspendWorkspaceMember,
 } from "@/features/workspace/services/workspace-service";
 import { IPagination, QueryParams } from "@/lib/types.ts";
 import { notifications } from "@mantine/notifications";
@@ -190,6 +192,38 @@ export function useCreateDirectUserMutation() {
     mutationFn: (data) => createDirectUser(data),
     onSuccess: () => {
       notifications.show({ message: "User created successfully" });
+      queryClient.invalidateQueries({ queryKey: ["workspaceMembers"] });
+    },
+    onError: (error) => {
+      const errorMessage = error["response"]?.data?.message;
+      notifications.show({ message: errorMessage, color: "red" });
+    },
+  });
+}
+
+export function useSuspendWorkspaceMemberMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { userId: string }>({
+    mutationFn: (data) => suspendWorkspaceMember(data),
+    onSuccess: () => {
+      notifications.show({ message: "Member suspended successfully" });
+      queryClient.invalidateQueries({ queryKey: ["workspaceMembers"] });
+    },
+    onError: (error) => {
+      const errorMessage = error["response"]?.data?.message;
+      notifications.show({ message: errorMessage, color: "red" });
+    },
+  });
+}
+
+export function useUnsuspendWorkspaceMemberMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { userId: string }>({
+    mutationFn: (data) => unsuspendWorkspaceMember(data),
+    onSuccess: () => {
+      notifications.show({ message: "Member unsuspended successfully" });
       queryClient.invalidateQueries({ queryKey: ["workspaceMembers"] });
     },
     onError: (error) => {

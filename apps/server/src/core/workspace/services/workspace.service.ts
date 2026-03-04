@@ -642,6 +642,87 @@ export class WorkspaceService {
     });
   }
 
+  async suspendWorkspaceMember(
+    authUser: User,
+    userId: string,
+    workspaceId: string,
+  ): Promise<void> {
+    const user = await this.userRepo.findById(userId, workspaceId);
+
+    if (!user || user.deletedAt) {
+      throw new BadRequestException('Workspace member not found');
+    }
+
+    if (authUser.id === userId) {
+      throw new BadRequestException('You cannot suspend yourself');
+    }
+
+    if (
+      authUser.role === UserRole.ADMIN &&
+      (user.role === UserRole.OWNER || user.role === UserRole.ADMIN)
+    ) {
+      throw new ForbiddenException(
+        'Admins cannot suspend other admins or owners',
+      );
+    }
+
+    if (user.deactivatedAt) {
+      throw new BadRequestException('Member is already suspended');
+    }
+
+    const workspaceOwnerCount = await this.userRepo.roleCountByWorkspaceId(
+      UserRole.OWNER,
+      workspaceId,
+    );
+
+    if (user.role === UserRole.OWNER && workspaceOwnerCount === 1) {
+      throw new BadRequestException(
+        'There must be at least one workspace owner',
+      );
+    }
+
+    await this.userRepo.updateUser(
+      { deactivatedAt: new Date() },
+      userId,
+      workspaceId,
+    );
+  }
+
+  async unsuspendWorkspaceMember(
+    authUser: User,
+    userId: string,
+    workspaceId: string,
+  ): Promise<void> {
+    const user = await this.userRepo.findById(userId, workspaceId);
+
+    if (!user || user.deletedAt) {
+      throw new BadRequestException('Workspace member not found');
+    }
+
+    if (authUser.id === userId) {
+      throw new BadRequestException('You cannot unsuspend yourself');
+    }
+
+    if (
+      authUser.role === UserRole.ADMIN &&
+      (user.role === UserRole.OWNER || user.role === UserRole.ADMIN)
+    ) {
+      throw new ForbiddenException(
+        'Admins cannot unsuspend other admins or owners',
+      );
+    }
+
+    if (!user.deactivatedAt) {
+      throw new BadRequestException('Member is not suspended');
+    }
+
+    await this.userRepo.updateUser(
+      { deactivatedAt: null },
+      userId,
+      workspaceId,
+    );
+  }
+
   async adminResetMemberPassword(
     authUser: User,
     targetUserId: string,

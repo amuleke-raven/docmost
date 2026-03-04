@@ -85,7 +85,11 @@ export default function WorkspaceMembersTable() {
                     </Group>
                   </Table.Td>
                   <Table.Td>
-                    <Badge variant="light">{t("Active")}</Badge>
+                    {user.deactivatedAt ? (
+                      <Badge variant="light" color="orange">{t("Suspended")}</Badge>
+                    ) : (
+                      <Badge variant="light" color="green">{t("Active")}</Badge>
+                    )}
                   </Table.Td>
                   <Table.Td>
                     <RoleSelectMenu
@@ -98,7 +102,13 @@ export default function WorkspaceMembersTable() {
                     />
                   </Table.Td>
                   <Table.Td>
-                    {isAdmin && <MemberActionMenu userId={user.id} />}
+                    {isAdmin && (
+                      <MemberActionMenu
+                        userId={user.id}
+                        memberRole={user.role}
+                        deactivatedAt={user.deactivatedAt}
+                      />
+                    )}
                   </Table.Td>
                 </Table.Tr>
               ))

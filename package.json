@@ -93,7 +93,7 @@
       "packages/*"
     ]
   },
-  "packageManager": "pnpm@10.4.0",
+  "packageManager": "pnpm@10.30.3",
   "pnpm": {
     "patchedDependencies": {
       "react-arborist@3.4.0": "patches/react-arborist@3.4.0.patch",
