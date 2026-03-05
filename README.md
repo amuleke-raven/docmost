@@ -13,7 +13,12 @@
 ## Getting started
 
 To get started with Docmost, please refer to our [documentation](https://docmost.com/docs) or try our [cloud version](https://docmost.com/pricing) .
+This is a modified version of Docmost. We've made some changes to accomodate our context including:
 
+  - Disbled page & space sharing
+  - Added the ability to create users without sending invitations
+  - Added the ability to suspend & unsuspend users
+  - Added ability for admins to reset passwords for users without sending links.
 ## Features
 
 - Real-time collaboration
@@ -43,20 +48,4 @@ All files in the following directories are licensed under the Docmost Enterprise
   - apps/server/src/ee
   - apps/client/src/ee
   - packages/ee
-
-### Contributing
-
-See the [development documentation](https://docmost.com/docs/self-hosting/development)
-
-## Thanks
-Special thanks to;
-
-<img width="100" alt="Crowdin" src="https://github.com/user-attachments/assets/a6c3d352-e41b-448d-b6cd-3fbca3109f07" />
-
-[Crowdin](https://crowdin.com/) for providing access to their localization platform.
-
-
-<img width="48" alt="Algolia-mark-square-white" src="https://github.com/user-attachments/assets/6ccad04a-9589-4965-b6a1-d5cb1f4f9e94" />
-
-[Algolia](https://www.algolia.com/) for providing full-text search to the docs.
 
